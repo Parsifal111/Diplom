@@ -1,0 +1,59 @@
+{% extends 'layout.html' %}
+
+{% block title %}Вход{% endblock %}
+
+{% block content %}
+    <h1 class="text-center">Вход в личный кабинет</h1>
+
+    <form id="login-form" class="mx-auto" style="max-width: 400px;" onsubmit="return loginUser(event)">
+        <!-- Поле для логина -->
+        <div class="mb-3">
+            <label for="username" class="form-label">Логин</label>
+            <input type="text" class="form-control" id="username" name="username" required>
+        </div>
+
+        <!-- Поле для пароля -->
+        <div class="mb-3">
+            <label for="password" class="form-label">Пароль</label>
+            <input type="password" class="form-control" id="password" name="password" required>
+        </div>
+
+        <!-- Кнопка отправки формы -->
+        <button type="submit" class="btn btn-primary w-100">Войти</button>
+    </form>
+
+    <div class="text-center mt-3">
+        <p>Нет аккаунта? <a href="{{ url_for('register') }}">Зарегистрироваться</a></p>
+    </div>
+
+    <script>
+        function loginUser(event) {
+            event.preventDefault();  // Останавливаем стандартную отправку формы
+
+            const login = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+
+            fetch('/api/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ login: login, password: password }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.token) {
+                    localStorage.setItem("token", data.token);  // Сохраняем токен
+                    localStorage.setItem("role", data.role);    // Сохраняем роль
+                    window.location.href = data.role === 'admin' ? '/admin_panel' : '/';  // Перенаправляем
+                } else {
+                    alert(data.error || "Ошибка входа");
+                }
+            })
+            .catch(error => {
+                console.error("Ошибка:", error);
+                alert("Произошла ошибка при входе.");
+            });
+        }
+    </script>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+{% block content %}
+  <h2>Управление категориями</h2>
+  <input type="text" id="category-name" placeholder="Введите имя категории">
+  <button onclick="addCategory()">Добавить категорию</button>
+
+  <div id="category-list">
+    <!-- Категории будут загружены сюда -->
+  </div>
+
+  <h2>Управление товарами</h2>
+  <input type="text" id="product-name" placeholder="Введите имя товара">
+  <select id="product-category-id">
+    <!-- Сюда добавлять список категорий для выбора -->
+  </select>
+  <button onclick="addProduct()">Добавить продукт</button>
+
+  <div id="product-list">
+    <!-- Продукты будут загружены сюда -->
+  </div>
+
+  <script>
+    // Ваш JavaScript код для управления категориями и товарами
+  </script>
+{% endblock %}
