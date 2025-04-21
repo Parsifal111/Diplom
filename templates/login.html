@@ -5,7 +5,7 @@
 {% block content %}
     <h1 class="text-center">Вход в личный кабинет</h1>
 
-    <form id="login-form" class="mx-auto" style="max-width: 400px;" onsubmit="return loginUser(event)">
+    <form id="login-form" class="mx-auto" style="max-width: 400px;">
         <!-- Поле для логина -->
         <div class="mb-3">
             <label for="username" class="form-label">Логин</label>
@@ -27,33 +27,37 @@
     </div>
 
     <script>
-        function loginUser(event) {
-            event.preventDefault();  // Останавливаем стандартную отправку формы
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementById("login-form").addEventListener("submit", function (event) {
+                event.preventDefault();
 
-            const login = document.getElementById("username").value;
-            const password = document.getElementById("password").value;
+                const login = document.getElementById("username").value;
+                const password = document.getElementById("password").value;
 
-            fetch('/api/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ login: login, password: password }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.token) {
-                    localStorage.setItem("token", data.token);  // Сохраняем токен
-                    localStorage.setItem("role", data.role);    // Сохраняем роль
-                    window.location.href = data.role === 'admin' ? '/admin_panel' : '/';  // Перенаправляем
-                } else {
-                    alert(data.error || "Ошибка входа");
-                }
-            })
-            .catch(error => {
-                console.error("Ошибка:", error);
-                alert("Произошла ошибка при входе.");
+                console.log("Login:", login, "Password:", password); // для отладки
+
+                fetch("/api/login", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ login, password })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.token) {
+                        localStorage.setItem("token", data.token);
+                        localStorage.setItem("role", data.role);
+                        window.location.href = data.role === 'admin' ? '/admin_panel' : '/';
+                    } else {
+                        alert(data.error || "Ошибка входа");
+                    }
+                })
+                .catch(error => {
+                    console.error("Ошибка:", error);
+                    alert("Произошла ошибка при входе.");
+                });
             });
-        }
+        });
     </script>
 {% endblock %}

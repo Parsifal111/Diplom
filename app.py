@@ -16,7 +16,7 @@ def get_db_connection():
 def api_login():
     data = request.get_json()
     login = data.get("login")
-    password = data.get("Password")
+    password = data.get("password")
 
     print(f"Login: {login}, Password: {password}")  # Отладка
 
@@ -24,7 +24,7 @@ def api_login():
         return jsonify({"error": "Missing login or password"}), 400
 
     conn = get_db_connection()
-    user = conn.execute("SELECT * FROM users WHERE Login = ? AND Password = ?", 
+    user = conn.execute("SELECT * FROM users WHERE Login = ? AND password = ?", 
                         (login, password)).fetchone()
     conn.close()
 
@@ -126,7 +126,7 @@ def delete_product(product_id):
 def index():
     return render_template('index.html')
 
-@app.route('/admin')
+@app.route('/admin_panel')
 def admin_panel():
     return render_template('admin_panel.html')
 
