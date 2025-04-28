@@ -1,0 +1,12 @@
+@media (min-width: 1400px) {
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+  
+    main {
+      padding-left: 2rem;
+    }
+  }
+  
