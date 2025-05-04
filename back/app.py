@@ -123,6 +123,36 @@ def create_product():
         "Rf_Category_id": data["Rf_Category_id"]
     }), 201
 
+@app.route("/api/products/<int:product_id>", methods=["PUT"])
+def update_product(product_id):
+    data = request.get_json()
+    print(f"Получен запрос на обновление товара {product_id}: {data}")
+    required_fields = ["name", "count", "units", "description", "price", "Rf_Category_id"]
+
+    if not all(field in data for field in required_fields):
+        return jsonify({"error": "Не все поля переданы"}), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE Products
+        SET Name = ?, Count = ?, Units = ?, Description = ?, Price = ?, Rf_Category_id = ?
+        WHERE ProductId = ?
+    """, (
+        data["name"],
+        data["count"],
+        data["units"],
+        data["description"],
+        data["price"],
+        data["Rf_Category_id"],
+        product_id
+    ))
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({"message": "Товар обновлён"}), 200
 
 @app.route('/api/products/<int:product_id>', methods=['DELETE'])
 def delete_product(product_id):

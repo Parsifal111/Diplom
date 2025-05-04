@@ -111,14 +111,38 @@
     </div>
   </div>
 
+  <!-- Модальное окно редактирования товара -->
+  <div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form id="editProductForm">
+          <div class="modal-header">
+            <h5 class="modal-title" id="editProductModalLabel">Редактировать товар</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="editProductId">
+            <div class="mb-3"><label class="form-label">Название</label><input type="text" class="form-control" id="editProductName" required></div>
+            <div class="mb-3"><label class="form-label">Количество</label><input type="number" class="form-control" id="editProductCount" required></div>
+            <div class="mb-3"><label class="form-label">Единицы измерения</label><input type="text" class="form-control" id="editProductUnits" required></div>
+            <div class="mb-3"><label class="form-label">Описание</label><textarea class="form-control" id="editProductDescription" required></textarea></div>
+            <div class="mb-3"><label class="form-label">Цена</label><input type="number" class="form-control" id="editProductPrice" required></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+            <button type="button" class="btn btn-primary" onclick="saveProductChanges()">Сохранить изменения</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <script src="/static/bootstrap/js/bootstrap.bundle.min.js"></script>
   <script>
-    // Вставка шаблонов
     fetch('/fragments/header.html').then(res => res.text()).then(html => document.getElementById('header').innerHTML = html);
     fetch('/fragments/footer.html').then(res => res.text()).then(html => document.getElementById('footer').innerHTML = html);
     fetch('/fragments/menu.html').then(res => res.text()).then(html => document.getElementById('menu').innerHTML = html);
 
-    // JS для загрузки каталога
     async function getCats() {
       let response = await fetch("/api/categories");
       if (response.ok) {
@@ -154,6 +178,8 @@
             <h5 class="card-title">${p.Name}</h5>
             <h6 class="card-subtitle mb-2 text-muted">${p.Price} ₽</h6>
             <p class="card-text">${p.Description}</p>
+            <button class="btn btn-sm btn-warning me-2" onclick='openEditProductModal(${JSON.stringify(p)})'>Редактировать</button>
+            <button class="btn btn-sm btn-danger" onclick='deleteProduct(${p.ProductId})'>Удалить</button>
           </div>
         </div>
       `).join('');
@@ -198,15 +224,72 @@
         const data = await response.json();
         alert("Товар добавлен: " + data.name);
         document.getElementById("productForm").reset();
-        const modal = bootstrap.Modal.getInstance(document.getElementById('productModal'));
-        modal.hide();
+        bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();
+        getCats();
       } else {
         alert("Ошибка при добавлении товара");
       }
     }
 
+    function openEditProductModal(p) {
+      document.getElementById('editProductId').value = p.ProductId;
+      document.getElementById('editProductName').value = p.Name;
+      document.getElementById('editProductCount').value = p.Count;
+      document.getElementById('editProductUnits').value = p.Units;
+      document.getElementById('editProductDescription').value = p.Description;
+      document.getElementById('editProductPrice').value = p.Price;
+      const modal = new bootstrap.Modal(document.getElementById('editProductModal'));
+      modal.show();
+    }
+
+    async function saveProductChanges() {
+      const id = document.getElementById("editProductId").value;
+      const name = document.getElementById("editProductName").value;
+      const count = document.getElementById("editProductCount").value;
+      const units = document.getElementById("editProductUnits").value;
+      const description = document.getElementById("editProductDescription").value;
+      const price = document.getElementById("editProductPrice").value;
+
+      if (!name || !count || !units || !description || !price) {
+        alert("Пожалуйста, заполните все поля.");
+        return;
+      }
+
+      const response = await fetch(`/api/products/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name,
+          count: parseFloat(count),
+          units: units,
+          description: description,
+          price: parseFloat(price)
+        })
+      });
+
+      if (response.ok) {
+        alert("Товар обновлен");
+        bootstrap.Modal.getInstance(document.getElementById('editProductModal')).hide();
+        getCats();
+      } else {
+        alert("Ошибка при обновлении товара");
+      }
+    }
+
+    async function deleteProduct(id) {
+      if (!confirm("Удалить этот товар?")) return;
+
+      const response = await fetch(`/api/products/${id}`, { method: "DELETE" });
+
+      if (response.ok) {
+        alert("Товар удален");
+        getCats();
+      } else {
+        alert("Ошибка при удалении товара");
+      }
+    }
+
     window.onload = getCats;
   </script>
-
 </body>
 </html>
