@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Каталог</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/static/css/custom.css" rel="stylesheet">
+  <style>
+    html, body {
+      height: 100%;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+    main {
+      flex: 1;
+    }
+    .cardList .card {
+      float: left;
+      margin: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Шапка -->
+  <div id="header"></div>
+
+  <!-- Контент -->
+  <main class="container-xxl my-3">
+    <div class="row">
+      
+      <!-- Меню -->
+      <aside class="col-12 col-md-4 col-xxl-3 bg-light p-4" id="menu"></aside>
+
+      <!-- Каталог -->
+      <section class="col-12 col-md-8 col-xxl-9 p-4">
+        <h4>Каталог</h4>
+        <div id="cats" class="btn-group mb-4" role="group" aria-label="Категории"></div>
+        <div class="cardList clearfix" id="cardList"></div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Подвал -->
+  <div id="footer"></div>
+
+  <script src="/static/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Вставка шаблонов
+    fetch('/fragments/header.html').then(res => res.text()).then(html => document.getElementById('header').innerHTML = html);
+    fetch('/fragments/footer.html').then(res => res.text()).then(html => document.getElementById('footer').innerHTML = html);
+    fetch('/fragments/menu.html').then(res => res.text()).then(html => document.getElementById('menu').innerHTML = html);
+
+    // JS для загрузки каталога
+    async function getCats() {
+      let response = await fetch("/api/categories");
+      if (response.ok) {
+        let data = await response.json();
+        outCats(data.categories);
+      } else {
+        alert("Ошибка загрузки категорий");
+      }
+    }
+
+    function outCats(cats) {
+      let html = cats.map(cat => `<button type="button" class="btn btn-outline-success" onclick="getProductsByCat(${cat.CategoryId})">${cat.Names}</button>`).join('');
+      document.getElementById('cats').innerHTML = html;
+    }
+
+    async function getProductsByCat(CategoryId) {
+      let response = await fetch("/api/products?category_id=" + CategoryId);
+      if (response.ok) {
+        let data = await response.json();
+        outCards(data.products);
+      } else {
+        alert("Ошибка загрузки товаров");
+      }
+    }
+
+    function outCards(products) {
+      let html = products.map(p => `
+        <div class="card" style="width: 18rem;">
+          <div class="card-body">
+            <h5 class="card-title">${p.Name}</h5>
+            <h6 class="card-subtitle mb-2 text-muted">${p.Price} ₽</h6>
+            <p class="card-text">${p.Description}</p>
+          </div>
+        </div>
+      `).join('');
+      document.getElementById('cardList').innerHTML = html;
+    }
+
+    window.onload = getCats;
+  </script>
+
+</body>
+</html>

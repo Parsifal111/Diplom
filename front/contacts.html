@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Контакты</title>
+    <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/custom.css" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Шапка -->
+    <div id="header"></div>
+
+    <main class="container-xxl my-4">
+        <div class="row">
+            <!-- Меню -->
+            <div class="col-12 col-md-4 col-xxl-3" id="menu"></div>
+
+            <!-- Контент -->
+            <div class="col-12 col-md-8 col-xxl-9 p-4">
+                <h2>Контакты</h2>
+                <p>Свяжитесь с нами по следующим каналам:</p>
+                <ul>
+                    <li><strong>Телефон:</strong> +7 (900) 123-45-67</li>
+                    <li><strong>Email:</strong> info@shop.ru</li>
+                    <li><strong>Адрес:</strong> г. Москва, ул. Примерная, д. 1</li>
+                </ul>
+                <p>Мы работаем с 9:00 до 20:00, без выходных.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Подвал -->
+    <div id="footer"></div>
+
+    <script src="/static/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Подгрузка общих фрагментов
+        fetch("/fragments/header.html").then(r => r.text()).then(html => document.getElementById("header").innerHTML = html);
+        fetch("/fragments/menu.html").then(r => r.text()).then(html => document.getElementById("menu").innerHTML = html);
+        fetch("/fragments/footer.html").then(r => r.text()).then(html => document.getElementById("footer").innerHTML = html);
+    </script>
+</body>
+</html>

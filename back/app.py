@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, request, jsonify
 import base64
 import sqlite3
 
@@ -94,16 +94,35 @@ def get_products():
 @app.route('/api/products', methods=['POST'])
 def create_product():
     data = request.get_json()
-    if not data or "name" not in data or "category_id" not in data:
-        return jsonify({"error": "Missing product name or category_id"}), 400
+    required_fields = ["name", "count", "units", "description", "price", "Rf_Category_id"]
+    
+    # Проверка наличия всех нужных полей
+    if not data or not all(field in data for field in required_fields):
+        return jsonify({"error": "Отсутствуют обязательные поля"}), 400
 
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO products (name, Rf_CategoryId) VALUES (?, ?)", (data["name"], data["Rf_CategoryId"]))
+    cursor.execute("""
+        INSERT INTO products (name, count, units, description, price, Rf_CategoryId)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (
+        data["name"],
+        data["count"],
+        data["units"],
+        data["description"],
+        data["price"],
+        data["Rf_Category_id"]
+    ))
     conn.commit()
     product_id = cursor.lastrowid
     conn.close()
-    return jsonify({"id": product_id, "name": data["name"], "category_id": data["category_id"]}), 201
+
+    return jsonify({
+        "id": product_id,
+        "name": data["name"],
+        "Rf_Category_id": data["Rf_Category_id"]
+    }), 201
+
 
 @app.route('/api/products/<int:product_id>', methods=['DELETE'])
 def delete_product(product_id):

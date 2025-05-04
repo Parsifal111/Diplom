@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Админ-панель</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/static/css/custom.css" rel="stylesheet">
+  <style>
+    html, body { height: 100%; }
+    body { display: flex; flex-direction: column; }
+    main { flex: 1; }
+    .cardList .card { float: left; margin: 20px; }
+  </style>
+</head>
+<body>
+
+  <!-- Шапка -->
+  <div id="header"></div>
+
+  <!-- Контент -->
+  <main class="container-xxl my-3">
+    <div class="row">
+      <!-- Меню -->
+      <aside class="col-12 col-md-4 col-xxl-3 bg-light p-4" id="menu"></aside>
+
+      <!-- Контент админ-панели -->
+      <section class="col-12 col-md-8 col-xxl-9 p-4">
+        <h4>Категории</h4>
+
+        <!-- Кнопка добавить категорию -->
+        <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addCategoryModal">Добавить категорию</button>
+        <div id="cats" class="btn-group mb-4" role="group" aria-label="Категории"></div>
+
+        <div class="cardList clearfix" id="cardList"></div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Подвал -->
+  <div id="footer"></div>
+
+  <!-- Модальное окно добавления категории -->
+  <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form id="categoryForm">
+          <div class="modal-header">
+            <h5 class="modal-title" id="addCategoryModalLabel">Создание категории</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label">Название</label>
+              <input type="text" class="form-control" id="categoryName" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Код</label>
+              <input type="text" class="form-control" id="categoryCode" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Сохранить</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модальное окно для добавления товара -->
+  <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form id="productForm">
+          <div class="modal-header">
+            <h5 class="modal-title" id="productModalLabel">Добавить товар</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="productName" class="form-label">Название товара</label>
+              <input type="text" class="form-control" id="productName" required>
+            </div>
+            <div class="mb-3">
+              <label for="productCount" class="form-label">Количество</label>
+              <input type="number" class="form-control" id="productCount" required>
+            </div>
+            <div class="mb-3">
+              <label for="productUnits" class="form-label">Единицы измерения</label>
+              <input type="text" class="form-control" id="productUnits" required>
+            </div>
+            <div class="mb-3">
+              <label for="productDescription" class="form-label">Описание</label>
+              <textarea class="form-control" id="productDescription" rows="2" required></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="productPrice" class="form-label">Цена</label>
+              <input type="number" class="form-control" id="productPrice" required>
+            </div>
+            <div class="mb-3">
+              <label for="productCategoryId" class="form-label">ID категории</label>
+              <input type="number" class="form-control" id="productCategoryId" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            <button type="button" class="btn btn-primary" onclick="createProduct()">Сохранить</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Вставка шаблонов
+    fetch('/fragments/header.html').then(res => res.text()).then(html => document.getElementById('header').innerHTML = html);
+    fetch('/fragments/footer.html').then(res => res.text()).then(html => document.getElementById('footer').innerHTML = html);
+    fetch('/fragments/menu.html').then(res => res.text()).then(html => document.getElementById('menu').innerHTML = html);
+
+    // JS для загрузки каталога
+    async function getCats() {
+      let response = await fetch("/api/categories");
+      if (response.ok) {
+        let data = await response.json();
+        outCats(data.categories);
+      } else {
+        alert("Ошибка загрузки категорий");
+      }
+    }
+
+    function outCats(cats) {
+      let html = cats.map(cat => `
+        <button type="button" class="btn btn-outline-success" onclick="getProductsByCat(${cat.CategoryId})">${cat.Names}</button>
+        <button type="button" class="btn btn-outline-primary" onclick="openAddProductModal(${cat.CategoryId})">Добавить товар</button>
+      `).join('');
+      document.getElementById('cats').innerHTML = html;
+    }
+
+    async function getProductsByCat(CategoryId) {
+      let response = await fetch("/api/products?category_id=" + CategoryId);
+      if (response.ok) {
+        let data = await response.json();
+        outCards(data.products);
+      } else {
+        alert("Ошибка загрузки товаров");
+      }
+    }
+
+    function outCards(products) {
+      let html = products.map(p => `
+        <div class="card" style="width: 18rem;">
+          <div class="card-body">
+            <h5 class="card-title">${p.Name}</h5>
+            <h6 class="card-subtitle mb-2 text-muted">${p.Price} ₽</h6>
+            <p class="card-text">${p.Description}</p>
+          </div>
+        </div>
+      `).join('');
+      document.getElementById('cardList').innerHTML = html;
+    }
+
+    function openAddProductModal(categoryId) {
+      document.getElementById('productCategoryId').value = categoryId;
+      const modal = new bootstrap.Modal(document.getElementById('productModal'));
+      modal.show();
+    }
+
+    async function createProduct() {
+      const name = document.getElementById("productName").value;
+      const count = document.getElementById("productCount").value;
+      const units = document.getElementById("productUnits").value;
+      const description = document.getElementById("productDescription").value;
+      const price = document.getElementById("productPrice").value;
+      const categoryId = document.getElementById("productCategoryId").value;
+
+      if (!name || !count || !units || !description || !price || !categoryId) {
+        alert("Пожалуйста, заполните все поля.");
+        return;
+      }
+
+      let response = await fetch("/api/products", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          name: name,
+          count: parseFloat(count),
+          units: units,
+          description: description,
+          price: parseFloat(price),
+          Rf_Category_id: parseInt(categoryId)
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        alert("Товар добавлен: " + data.name);
+        document.getElementById("productForm").reset();
+        const modal = bootstrap.Modal.getInstance(document.getElementById('productModal'));
+        modal.hide();
+      } else {
+        alert("Ошибка при добавлении товара");
+      }
+    }
+
+    window.onload = getCats;
+  </script>
+
+</body>
+</html>

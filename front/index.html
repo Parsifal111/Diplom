@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Главная</title>
+  <link rel="stylesheet" href="./static/bootstrap/css/bootstrap.min.css"/>
+  <style>
+    html, body {
+      height: 100%;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+    main {
+      flex: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Шапка -->
+  <div id="header-placeholder"></div>
+
+  <!-- Основной контент -->
+  <main class="container-xxl my-3">
+    <div class="row">
+      <!-- Меню -->
+      <div id="menu-placeholder" class="col-12 col-md-4 col-xxl-3"></div>
+
+      <!-- Контент -->
+      <section class="col-12 col-md-8 col-xxl-9 p-4">
+        <h1 class="mb-4">Добро пожаловать в наш магазин!</h1>
+        <p>Свежие продукты, честные цены и быстрая доставка прямо до вашей двери.</p>
+
+        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4 mt-4">
+          <div class="col">
+            <div class="card h-100">
+              <img src="./images/fresh.png" class="card-img-top" alt="Свежие продукты">
+              <div class="card-body">
+                <h5 class="card-title">Свежесть каждый день</h5>
+                <p class="card-text">Поставки от проверенных фермеров и производителей.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="card h-100">
+              <img src="./images/delivery.jpg" class="card-img-top" alt="Доставка">
+              <div class="card-body">
+                <h5 class="card-title">Быстрая доставка</h5>
+                <p class="card-text">Доставим товары за 1–2 часа по городу.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="card h-100">
+              <img src="./images/prices.jpg" class="card-img-top" alt="Цены">
+              <div class="card-body">
+                <h5 class="card-title">Доступные цены</h5>
+                <p class="card-text">Честные цены без наценок посредников.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Подвал -->
+  <div id="footer-placeholder"></div>
+
+  <script src="./static/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function loadFragment(id, path) {
+      fetch(path)
+        .then(res => res.text())
+        .then(html => document.getElementById(id).innerHTML = html)
+        .catch(err => console.error('Ошибка загрузки', path, err));
+    }
+
+    loadFragment('header-placeholder', './fragments/header.html');
+    loadFragment('menu-placeholder', './fragments/menu.html');
+    loadFragment('footer-placeholder', './fragments/footer.html');
+  </script>
+</body>
+</html>
