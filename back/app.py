@@ -137,8 +137,8 @@ def update_product(product_id):
 
     cursor.execute("""
         UPDATE Products
-        SET Name = ?, Count = ?, Units = ?, Description = ?, Price = ?, Rf_Category_id = ?
-        WHERE ProductId = ?
+        SET Name = ?, Count = ?, Units = ?, Description = ?, Price = ?, Rf_CategoryId = ?
+        WHERE Products_Id = ?
     """, (
         data["name"],
         data["count"],
@@ -163,13 +163,13 @@ def delete_product(product_id):
     cursor = conn.cursor()
 
     # Проверяем, существует ли товар
-    product = cursor.execute("SELECT * FROM products WHERE id = ?", (product_id,)).fetchone()
+    product = cursor.execute("SELECT * FROM products WHERE Products_Id = ?", (product_id,)).fetchone()
     if product is None:
         conn.close()
         return jsonify({"error": "Product not found"}), 404
 
     # Удаляем товар
-    cursor.execute("DELETE FROM products WHERE id = ?", (product_id,))
+    cursor.execute("DELETE FROM products WHERE Products_Id = ?", (product_id,))
     conn.commit()
     conn.close()
     return jsonify({"message": "Product deleted"}), 200

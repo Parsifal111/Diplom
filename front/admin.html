@@ -127,6 +127,7 @@
             <div class="mb-3"><label class="form-label">Единицы измерения</label><input type="text" class="form-control" id="editProductUnits" required></div>
             <div class="mb-3"><label class="form-label">Описание</label><textarea class="form-control" id="editProductDescription" required></textarea></div>
             <div class="mb-3"><label class="form-label">Цена</label><input type="number" class="form-control" id="editProductPrice" required></div>
+            <div class="mb-3"><label class="form-label">id категории</label><input type="number" class="form-control" id="editProductCategoryId" required></div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
@@ -179,7 +180,7 @@
             <h6 class="card-subtitle mb-2 text-muted">${p.Price} ₽</h6>
             <p class="card-text">${p.Description}</p>
             <button class="btn btn-sm btn-warning me-2" onclick='openEditProductModal(${JSON.stringify(p)})'>Редактировать</button>
-            <button class="btn btn-sm btn-danger" onclick='deleteProduct(${p.ProductId})'>Удалить</button>
+            <button class="btn btn-sm btn-danger" onclick='deleteProduct(${p.Products_Id})'>Удалить</button>
           </div>
         </div>
       `).join('');
@@ -232,7 +233,8 @@
     }
 
     function openEditProductModal(p) {
-      document.getElementById('editProductId').value = p.ProductId;
+      document.getElementById('editProductCategoryId').value = p.Rf_Category_id;
+      document.getElementById('editProductId').value = p.Products_Id;
       document.getElementById('editProductName').value = p.Name;
       document.getElementById('editProductCount').value = p.Count;
       document.getElementById('editProductUnits').value = p.Units;
@@ -243,6 +245,7 @@
     }
 
     async function saveProductChanges() {
+      const categoryId = document.getElementById("editProductCategoryId").value;
       const id = document.getElementById("editProductId").value;
       const name = document.getElementById("editProductName").value;
       const count = document.getElementById("editProductCount").value;
@@ -263,7 +266,8 @@
           count: parseFloat(count),
           units: units,
           description: description,
-          price: parseFloat(price)
+          price: parseFloat(price),
+          Rf_Category_id: categoryId
         })
       });
 
