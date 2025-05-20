@@ -82,17 +82,52 @@
 
     function outCards(products) {
       let html = products.map(p => `
-        <div class="card" style="width: 18rem;">
-          <div class="card-body">
+        <div class="card m-2" style="width: 18rem;">
+          <div class="card-body d-flex flex-column">
             <h5 class="card-title">${p.Name}</h5>
             <h6 class="card-subtitle mb-2 text-muted">${p.Price} ₽</h6>
             <p class="card-text">${p.Description}</p>
+            <button class="btn btn-primary mt-auto" onclick="orderProduct(${p.Products_Id})">Заказать</button>
           </div>
         </div>
       `).join('');
       document.getElementById('cardList').innerHTML = html;
     }
 
+        // ===== Заказ товара =====
+    function orderProduct(productId) {
+      const phone = prompt("Введите ваш номер телефона:");
+      if (!phone || phone.trim() === "") {
+        alert("Номер телефона обязателен!");
+        return;
+      }
+
+      const count = 1; // Пока фиксированное количество
+
+      fetch("/api/order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          Rf_Products_Id: productId,
+          CountProduct: count,
+          ContactUser: phone
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.order_code) {
+          alert("✅ Заказ оформлен! Номер: " + data.order_code);
+        } else {
+          alert("❌ Ошибка: " + (data.error || "Не удалось оформить заказ"));
+        }
+      })
+  .catch(error => {
+    console.error("Ошибка при оформлении заказа:", error);
+    alert("Произошла ошибка при оформлении заказа.");
+  });
+}
     window.onload = getCats;
   </script>
 

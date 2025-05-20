@@ -14,27 +14,66 @@ def get_db_connection():
 
 @app.route('/api/login', methods=['POST'])
 def api_login():
-    data = request.get_json()
+    data = request.get_json(force=True, silent=True)
+    if not data:
+        print("Неверный JSON")
+        return jsonify({"error": "Invalid or missing JSON in request"}), 400
+
     login = data.get("login")
     password = data.get("password")
-
-    print(f"Login: {login}, Password: {password}")  # Отладка
 
     if not login or not password:
         return jsonify({"error": "Missing login or password"}), 400
 
     conn = get_db_connection()
-    user = conn.execute("SELECT * FROM users WHERE Login = ? AND password = ?", 
+    user = conn.execute("SELECT * FROM users WHERE Login = ? AND Password = ?", 
                         (login, password)).fetchone()
     conn.close()
 
     if user:
-        print(f"User found: {user}")  # Отладка
         token = base64.b64encode(f"{login}:{password}".encode()).decode()
         return jsonify({"token": token, "role": "admin"})
     else:
         return jsonify({"error": "Invalid credentials"}), 401
-    
+
+@app.route("/api/order", methods=["POST"])
+def create_order():
+    data = request.get_json()
+    required_fields = ["Rf_Products_Id", "CountProduct", "ContactUser"]
+
+    # Проверка обязательных полей
+    if not all(field in data and data[field] for field in required_fields):
+        return jsonify({"error": "Все поля обязательны"}), 400
+
+    product_id = data["Rf_Products_Id"]
+    count = data["CountProduct"]
+    contact = data["ContactUser"]
+
+    # Получаем сегодняшнюю дату
+    today = datetime.now().strftime("%Y-%m-%d")
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Получаем максимальный OrderCode за сегодня
+    cursor.execute("""
+        SELECT MAX(OrderCode) FROM orders 
+        WHERE DATE(OrderDate) = ?
+    """, (today,))
+    max_code = cursor.fetchone()[0]
+    next_code = (max_code or 0) + 1
+
+    # Вставляем новый заказ
+    cursor.execute("""
+        INSERT INTO orders (Rf_Products_Id, CountProduct, ContactUser, OrderDate, OrderCode)
+        VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?)
+    """, (product_id, count, contact, next_code))
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({"message": "Заказ оформлен", "order_code": next_code}), 201
+   
 @app.route('/api/categories', methods=['GET'])
 def get_categories():
     conn = get_db_connection()
