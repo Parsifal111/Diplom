@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 import base64
+import hashlib
 import sqlite3
 from datetime import datetime
 
@@ -26,13 +27,16 @@ def api_login():
     if not login or not password:
         return jsonify({"error": "Missing login or password"}), 400
 
+    # Вычисляем хеш пароля
+    hash_value = hashlib.sha256(password.encode()).hexdigest()
+
     conn = get_db_connection()
     user = conn.execute("SELECT * FROM users WHERE Login = ? AND Password = ?", 
-                        (login, password)).fetchone()
+                        (login, hash_value)).fetchone()
     conn.close()
 
     if user:
-        token = base64.b64encode(f"{login}:{password}".encode()).decode()
+        token = base64.b64encode(f"{login}:{hash_value}".encode()).decode()
         return jsonify({"token": token, "role": "admin"})
     else:
         return jsonify({"error": "Invalid credentials"}), 401
