@@ -40,6 +40,7 @@ def api_login():
         return jsonify({"token": token, "role": "admin"})
     else:
         return jsonify({"error": "Invalid credentials"}), 401
+        
 
 @app.route("/api/order", methods=["POST"])
 def create_order():
